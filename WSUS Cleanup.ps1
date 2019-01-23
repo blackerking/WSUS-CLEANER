@@ -51,18 +51,18 @@ $ARM64_counted = $arm64.count
 
 
 # Windows Embedded
-$arm64 = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match “Windows Embedded Standard”}
-$ARM64_counted = $arm64.count
-    If ($ARM64.count -lt 1)
+$embedded = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match “Windows Embedded Standard”}
+$embedded_counted = $embedded.count
+    If ($embedded.count -lt 1)
         {
-            $ARM64_counted = 0
+            $embedded_counted = 0
         }
-    If ($TrialRun -eq 0 -and $arm64.count -gt 0)
+    If ($TrialRun -eq 0 -and $embedded.count -gt 0)
         {
-            $ARM64  | %{$_.Decline()}
+            $embedded  | %{$_.Decline()}
         }
 
-"$ARM64_counted ARM64 Updates wurden abgelehnt"
+"$embedded_counted Windows Embedded Updates wurden abgelehnt"
 
 
 # MS Office 64-Bit
