@@ -2,11 +2,14 @@ set-executionpolicy RemoteSigned
 
 $WsusServer = ([system.net.dns]::GetHostByName('localhost')).hostname
 $UseSSL = $false
+$WsusName = localhost
 $PortNumber = 8530
+$WSUS = Get-WsusServer -Name $WsusName -PortNumber $PortNumber
 $TrialRun = 0
 # 1 = Yes
 # 0 = No#
 
+"WSUS Reinigung gestartet"
 
 # Connect to the WSUS 3.0 interface.
 [reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration") | out-null
@@ -54,17 +57,6 @@ $LanguagePack_counted = $LanguagePack.count
             $LanguagePack  | %{$_.Decline()}
         }
 
-$LanguagePackVer2 = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match “LanguageInterfacePack - Windows 10”}
-$LanguagePack_counted = $LanguagePackVer2.count + $LanguagePack_counted
-    If ($LanguagePack.count -lt 1)
-        {
-            $LanguagePack_counted = 0
-        }
-    If ($TrialRun -eq 0 -and $LanguagePackVer2.count -gt 0)
-        {
-            $LanguagePackVer2  | %{$_.Decline()}
-        }
-
 "$LanguagePack_counted Language Interface Packs wurden abgelehnt"
 
 # Searching in just the title of the update
@@ -110,6 +102,7 @@ $LiPW10InsiderPreview_counted = $LiPW10InsiderPreview.count
         }
 
 "$LiPW10InsiderPreview_counted LanguageInterfacePack - Windows 10 Insider Preview wurden abgelehnt"
+
 # Searching in just the title of the update
 # LanguageInterfacePack - Windows 10 Insider Preview
 $LiPW10InsiderPreview = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match “LanguageInterfacePack - Windows 10 Insider Preview”}
@@ -138,3 +131,6 @@ $ARM64_counted = $arm64.count
         }
 
 "$ARM64_counted ARM64 Updates wurden abgelehnt"
+"
+
+Invoke-WsusServerCleanup -UpdateServer $WSUS -DeclineExpiredUpdates -DeclineSupersededUpdates -CleanupObsoleteUpdates -CleanupUnneededContentFiles -CompressUpdates
