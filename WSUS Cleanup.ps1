@@ -1,4 +1,4 @@
-﻿set-executionpolicy RemoteSigned
+set-executionpolicy RemoteSigned
 
 $WsusServer = ([system.net.dns]::GetHostByName('localhost')).hostname
 $UseSSL = $false
@@ -52,6 +52,17 @@ $LanguagePack_counted = $LanguagePack.count
     If ($TrialRun -eq 0 -and $LanguagePack.count -gt 0)
         {
             $LanguagePack  | %{$_.Decline()}
+        }
+
+$LanguagePackVer2 = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match “LanguageInterfacePack - Windows 10”}
+$LanguagePack_counted = $LanguagePackVer2.count + $LanguagePack_counted
+    If ($LanguagePack.count -lt 1)
+        {
+            $LanguagePack_counted = 0
+        }
+    If ($TrialRun -eq 0 -and $LanguagePackVer2.count -gt 0)
+        {
+            $LanguagePackVer2  | %{$_.Decline()}
         }
 
 "$LanguagePack_counted Language Interface Packs wurden abgelehnt"
