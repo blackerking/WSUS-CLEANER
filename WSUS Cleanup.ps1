@@ -18,7 +18,7 @@ $Sprache= $Sprache.Replace("}",$null)
 ####Sprachtexte anpassen
 if($Sprache -eq "de")
 {
-    echo "Deutsche Text ausgabe " "`0"
+    #echo "Deutsche Text ausgabe " "`0"
     $IA64_text =" Itanium updates wurden abgelehnt"
     $ARM64_text =" ARM64 Updates wurden abgelehnt"
     $embedded_text =" Windows Embedded Updates wurden abgelehnt"
@@ -29,7 +29,7 @@ if($Sprache -eq "de")
 
 if($Sprache -eq "en")
 {
-    echo "Englische Text ausgabe " "`0"
+    #echo "Englische Text ausgabe " "`0"
     $IA64_text =" Itanium updates were declined"
     $ARM64_text =" ARM64 Updates were declined"
     $embedded_text =" Windows Embedded Updates were declined"
@@ -41,7 +41,7 @@ if($Sprache -eq "en")
 
 echo "$Start_Name"
 
-# Connect to the WSUS 3.0 interface.
+# Verbinde zum WSUS 3.0 interface.
 [reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration") | out-null
 $WsusServerAdminProxy = [Microsoft.UpdateServices.Administration.AdminProxy]::GetUpdateServer($WsusServer,$UseSSL,$PortNumber);
 
