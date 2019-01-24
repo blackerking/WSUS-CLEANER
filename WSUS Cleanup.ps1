@@ -2,7 +2,7 @@ set-executionpolicy RemoteSigned
 
 $WsusServer = ([system.net.dns]::GetHostByName('localhost')).hostname
 $UseSSL = $false
-$WsusName = localhost
+$WsusName = "localhost"
 $PortNumber = 8530
 $WSUS = Get-WsusServer -Name $WsusName -PortNumber $PortNumber
 $TrialRun = 0
