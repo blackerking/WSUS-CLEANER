@@ -9,9 +9,39 @@ $TrialRun = 0
 # 1 = Yes
 # 0 = No#
 
-"WSUS Reinigung gestartet"
+#Ermittle Sprache
+[String]$Sprache = [CultureInfo]::InstalledUICulture | select TwoLetter* 
+$Sprache = $Sprache.Remove(0,27)
+$Sprache= $Sprache.Replace("}",$null)
 
-# Connect to the WSUS 3.0 interface.
+
+####Sprachtexte anpassen
+if($Sprache -eq "de")
+{
+    #echo "Deutsche Text ausgabe " "`0"
+    $IA64_text =" Itanium updates wurden abgelehnt"
+    $ARM64_text =" ARM64 Updates wurden abgelehnt"
+    $embedded_text =" Windows Embedded Updates wurden abgelehnt"
+    $Office64_text =" MS Office 64-Bit wurden abgelehnt"
+    $LanguagePack_text =" Language Interface Packs / Sprachpakete wurden abgelehnt"
+    $Start_Name =" WSUS Reinigung gestartet"
+}
+
+if($Sprache -eq "en")
+{
+    #echo "Englische Text ausgabe " "`0"
+    $IA64_text =" Itanium updates were declined"
+    $ARM64_text =" ARM64 Updates were declined"
+    $embedded_text =" Windows Embedded Updates were declined"
+    $Office64_text =" MS Office 64-Bit were declined"
+    $LanguagePack_text =" Language Interface Packs were declined"
+    $Start_Name =" WSUS cleaning started"
+}
+
+
+echo "$Start_Name"
+
+# Verbinde zum WSUS 3.0 interface.
 [reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration") | out-null
 $WsusServerAdminProxy = [Microsoft.UpdateServices.Administration.AdminProxy]::GetUpdateServer($WsusServer,$UseSSL,$PortNumber);
 
@@ -32,7 +62,7 @@ $IA64_counted = $itanium.count
             $itanium  | %{$_.Decline()}
         }
 
-"$IA64_counted Itanium updates wurden abgelehnt"
+echo "$IA64_counted $IA64_text"
 
 
 # ARM64
@@ -47,7 +77,7 @@ $ARM64_counted = $arm64.count
             $ARM64  | %{$_.Decline()}
         }
 
-"$ARM64_counted ARM64 Updates wurden abgelehnt"
+echo "$ARM64_counted $ARM64_text"
 
 
 # Windows Embedded
@@ -62,7 +92,7 @@ $embedded_counted = $embedded.count
             $embedded  | %{$_.Decline()}
         }
 
-"$embedded_counted Windows Embedded Updates wurden abgelehnt"
+echo "$embedded_counted $embedded_text"
 
 
 # MS Office 64-Bit
@@ -77,7 +107,7 @@ $Office64_count = $Office64.count
             $Office64 | %{$_.Decline()}
         }
 
-"$Office64_count MS Office 64-Bit wurden abgelehnt"
+echo "$Office64_count $Office64_text"
 
 
 # Language Pack
@@ -92,7 +122,7 @@ $LanguagePack_counted = $LanguagePack.count
             $LanguagePack  | %{$_.Decline()}
         }
 
-"$LanguagePack_counted Language Interface Packs / Sprachpakete wurden abgelehnt"
+echo "$LanguagePack_counted $LanguagePack_text"
 
 
 Invoke-WsusServerCleanup -UpdateServer $WSUS -DeclineExpiredUpdates -DeclineSupersededUpdates -CleanupObsoleteUpdates -CleanupUnneededContentFiles -CompressUpdates
