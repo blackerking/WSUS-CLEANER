@@ -1,3 +1,7 @@
+
+
+
+
 set-executionpolicy RemoteSigned
 
 $WsusServer = ([system.net.dns]::GetHostByName('localhost')).hostname
@@ -16,9 +20,19 @@ $Sprache= $Sprache.Replace("}",$null)
 
 
 ####Sprachtexte anpassen
+($Sprache -eq "en")
+{
+    echo "Englische Text ausgabe " "`0"
+    $IA64_text =" Itanium updates were declined"
+    $ARM64_text =" ARM64 Updates were declined"
+    $embedded_text =" Windows Embedded Updates were declined"
+    $Office64_text =" MS Office 64-Bit were declined"
+    $LanguagePack_text =" Language Interface Packs were declined"
+    $Start_Name =" WSUS cleaning started"
+}
 if($Sprache -eq "de")
 {
-    #echo "Deutsche Text ausgabe " "`0"
+    echo "Deutsche Text ausgabe " "`0"
     $IA64_text =" Itanium updates wurden abgelehnt"
     $ARM64_text =" ARM64 Updates wurden abgelehnt"
     $embedded_text =" Windows Embedded Updates wurden abgelehnt"
@@ -27,21 +41,12 @@ if($Sprache -eq "de")
     $Start_Name =" WSUS Reinigung gestartet"
 }
 
-if($Sprache -eq "en")
-{
-    #echo "Englische Text ausgabe " "`0"
-    $IA64_text =" Itanium updates were declined"
-    $ARM64_text =" ARM64 Updates were declined"
-    $embedded_text =" Windows Embedded Updates were declined"
-    $Office64_text =" MS Office 64-Bit were declined"
-    $LanguagePack_text =" Language Interface Packs were declined"
-    $Start_Name =" WSUS cleaning started"
-}
+
 
 
 echo "$Start_Name"
 
-# Verbinde zum WSUS 3.0 interface.
+# Connect to the WSUS 3.0 interface.
 [reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration") | out-null
 $WsusServerAdminProxy = [Microsoft.UpdateServices.Administration.AdminProxy]::GetUpdateServer($WsusServer,$UseSSL,$PortNumber);
 
