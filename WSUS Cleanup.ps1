@@ -18,10 +18,6 @@ $TrialRun = 0
 $Sprache = $Sprache.Remove(0,27)
 $Sprache= $Sprache.Replace("}",$null)
 
-
-####Sprachtexte anpassen
-($Sprache -eq "en")
-{
     echo "Englische Text ausgabe " "`0"
     $IA64_text =" Itanium updates were declined"
     $ARM64_text =" ARM64 Updates were declined"
@@ -29,7 +25,8 @@ $Sprache= $Sprache.Replace("}",$null)
     $Office64_text =" MS Office 64-Bit were declined"
     $LanguagePack_text =" Language Interface Packs were declined"
     $Start_Name =" WSUS cleaning started"
-}
+
+####Sprachtexte anpassen
 if($Sprache -eq "de")
 {
     echo "Deutsche Text ausgabe " "`0"
@@ -41,16 +38,11 @@ if($Sprache -eq "de")
     $Start_Name =" WSUS Reinigung gestartet"
 }
 
-
-
-
 echo "$Start_Name"
 
 # Connect to the WSUS 3.0 interface.
 [reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration") | out-null
 $WsusServerAdminProxy = [Microsoft.UpdateServices.Administration.AdminProxy]::GetUpdateServer($WsusServer,$UseSSL,$PortNumber);
-
-
 
 
 # Suche Updates nach Namen und lehne diese ab
