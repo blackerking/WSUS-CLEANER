@@ -10,17 +10,11 @@ $UseSSL = $false
 $WsusName = "localhost"
 $PortNumber = 8530
 $WSUS = Get-WsusServer -Name $WsusName -PortNumber $PortNumber
-$TrialRun = 0
-# 1 = Yes
-# 0 = No#
-
-
 
 #Ermittle Sprache
 [String]$Sprache = [CultureInfo]::InstalledUICulture | select TwoLetter* 
 $Sprache = $Sprache.Remove(0,27)
 $Sprache= $Sprache.Replace("}",$null)
-
 
 
 ####Sprachtexte anpassen
@@ -42,6 +36,8 @@ if($Sprache -eq "de")
     $LanguagePack_titel ="Language Interface Packs / Sprachpakete werden abgelehnt"
     $working_declining = "Updates gefunden, Ablehnen..."
     $working_noup = "Es wurden keine Updates gefunden, die abgelehnt werden mussten."
+    $working_clean = "Standard Reinigung gestartet..."
+    $done = "Fertig!"
 }
 else
 { 
@@ -61,6 +57,8 @@ else
     $LanguagePack_titel ="Checking for Updates: Language Packs"
     $working_declining = "Updates found. Declining..."
     $working_noup = "No updates found that needed declining."
+    $working_clean = "Standard cleanup startet..."
+    $done = "done!"
 }
 echo "################## $Start_Name ##################"
 
@@ -128,25 +126,6 @@ Write-Host -ForegroundColor Yellow "$embedded_titel"
     Else { Write-Host -ForegroundColor DarkGreen "$working_noup" }
 
 
-# MS Office 64-Bit
-
-Write-Host -ForegroundColor Yellow "$Office64_titel"
-    $Updates = $null;    # Reset variable
-    $Updates = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match "Excel|Lync|Office|Outlook|Powerpoint|Visio|word" -and $_.Title -match "64-bit"}
-    If($Updates) {
-        Write-Host -ForegroundColor Green "$working_declining"
-	    $Updates | %{$_.Decline()}
-	    $Table = @{Name="Title";Expression={[string]$_.Title}},`
-		    @{Name="KB";Expression={[string]$_.KnowledgebaseArticles}},`
-		    @{Name="Classification";Expression={[string]$_.UpdateClassificationTitle}},`
-		    @{Name="Product";Expression={[string]$_.ProductTitles}},`
-		    @{Name="Family";Expression={[string]$_.ProductFamilyTitles}}
-	    # Display to Console
-            $Updates | Select $Table | sort Classification | ft Title,Classification,KB -AutoSize
-    }
-    Else { Write-Host -ForegroundColor DarkGreen "$working_noup" }
-
-
 # Language Pack
 
 Write-Host -ForegroundColor Yellow "$LanguagePack_titel"
@@ -166,6 +145,6 @@ Write-Host -ForegroundColor Yellow "$LanguagePack_titel"
     Else { Write-Host -ForegroundColor DarkGreen "$working_noup" }
 
 
+Write-Host -ForegroundColor Green "$working_clean"
 Invoke-WsusServerCleanup -UpdateServer $WSUS -DeclineExpiredUpdates -DeclineSupersededUpdates -CleanupObsoleteUpdates -CleanupUnneededContentFiles -CompressUpdates
-
-
+Write-Host -ForegroundColor Green "$done"
