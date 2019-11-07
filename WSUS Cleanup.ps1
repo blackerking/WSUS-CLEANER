@@ -1,5 +1,6 @@
-
-
+####################################
+#            WSUS-Cleanup          #
+####################################
 
 
 set-executionpolicy RemoteSigned
@@ -39,7 +40,8 @@ if($Sprache -eq "de")
     $embedded_titel ="Windows Embedded Updates werden abgelehnt"
     $Office64_titel ="MS Office 64-Bit werden abgelehnt"
     $LanguagePack_titel ="Language Interface Packs / Sprachpakete werden abgelehnt"
-    $Cleaning_titel = "Reinigung gestartet"
+    $working_declining = "Updates gefunden, Ablehnen..."
+    $working_noup = "Es wurden keine Updates gefunden, die abgelehnt werden mussten."
 }
 else
 { 
@@ -52,12 +54,13 @@ else
     $LanguagePack_text =" Language Interface Packs were declined"
     $Start_Name ="WSUS cleaning started"
 
-    $IA64_titel ="Itanium updates werden abgelehnt"
-    $ARM64_titel ="ARM64 Updates werden abgelehnt"
-    $embedded_titel ="Windows Embedded Updates werden abgelehnt"
-    $Office64_titel ="MS Office 64-Bit werden abgelehnt"
-    $LanguagePack_titel ="Language Interface Packs / Sprachpakete werden abgelehnt"
-    $Cleaning_titel = "Reinigung gestartet"
+    $IA64_titel ="Checking for Updates: Itanium, IA64"
+    $ARM64_titel ="Checking for Updates: ARM64"
+    $embedded_titel ="Checking for Updates: Windwos Embedded"
+    $Office64_titel ="Checking for Updates: Office x64"
+    $LanguagePack_titel ="Checking for Updates: Language Packs"
+    $working_declining = "Updates found. Declining..."
+    $working_noup = "No updates found that needed declining."
 }
 echo "################## $Start_Name ##################"
 
@@ -69,80 +72,100 @@ $WsusServerAdminProxy = [Microsoft.UpdateServices.Administration.AdminProxy]::Ge
 # Suche Updates nach Namen und lehne diese ab
 
 # Itanium/IA64
-echo "$IA64_titel"
-$itanium = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match "ia64|itanium"}
-$IA64_counted = $itanium.count
-    If ($itanium.count -lt 1)
-        {
-            $IA64_counted = 0
-        }
-    If ($TrialRun -eq 0 -and $itanium.count -gt 0)
-        {
-            $itanium  | %{$_.Decline()}
-        }
 
-echo "$IA64_counted $IA64_text"
+Write-Host -ForegroundColor Yellow "$IA64_titel"
+    $Updates = $null;    # Reset variable
+    $Updates = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match “ia64|itanium”}
+    If($Updates) {
+        Write-Host -ForegroundColor Green "$working_declining"
+	    $Updates | %{$_.Decline()}
+	    $Table = @{Name="Title";Expression={[string]$_.Title}},`
+		    @{Name="KB";Expression={[string]$_.KnowledgebaseArticles}},`
+		    @{Name="Classification";Expression={[string]$_.UpdateClassificationTitle}},`
+		    @{Name="Product";Expression={[string]$_.ProductTitles}},`
+		    @{Name="Family";Expression={[string]$_.ProductFamilyTitles}}
+	    # Display to Console
+            $Updates | Select $Table | sort Classification | ft Title,Classification,KB -AutoSize
+    }
+    Else { Write-Host -ForegroundColor DarkGreen "$working_noup" }
 
-echo "$ARM64_titel"
 
 # ARM64
-$arm64 = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match "ARM64"}
-$ARM64_counted = $arm64.count
-    If ($ARM64.count -lt 1)
-        {
-            $ARM64_counted = 0
-        }
-    If ($TrialRun -eq 0 -and $arm64.count -gt 0)
-        {
-            $ARM64  | %{$_.Decline()}
-        }
 
-echo "$ARM64_counted $ARM64_text"
-echo "$embedded_titel"
+Write-Host -ForegroundColor Yellow "$ARM64_titel"
+    $Updates = $null;    # Reset variable
+    $Updates = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match “ARM64”}
+    If($Updates) {
+        Write-Host -ForegroundColor Green "$working_declining"
+	    $Updates | %{$_.Decline()}
+	    $Table = @{Name="Title";Expression={[string]$_.Title}},`
+		    @{Name="KB";Expression={[string]$_.KnowledgebaseArticles}},`
+		    @{Name="Classification";Expression={[string]$_.UpdateClassificationTitle}},`
+		    @{Name="Product";Expression={[string]$_.ProductTitles}},`
+		    @{Name="Family";Expression={[string]$_.ProductFamilyTitles}}
+	    # Display to Console
+            $Updates | Select $Table | sort Classification | ft Title,Classification,KB -AutoSize
+    }
+    Else { Write-Host -ForegroundColor DarkGreen "$working_noup" }
+
 
 # Windows Embedded
-$embedded = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match "Windows Embedded Standard"}
-$embedded_counted = $embedded.count
-    If ($embedded.count -lt 1)
-        {
-            $embedded_counted = 0
-        }
-    If ($TrialRun -eq 0 -and $embedded.count -gt 0)
-        {
-            $embedded  | %{$_.Decline()}
-        }
 
-echo "$embedded_counted $embedded_text"
-echo "$Office64_titel"
+Write-Host -ForegroundColor Yellow "$embedded_titel"
+    $Updates = $null;    # Reset variable
+    $Updates = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match “Windows Embedded Standard”}
+    If($Updates) {
+        Write-Host -ForegroundColor Green "$working_declining"
+	    $Updates | %{$_.Decline()}
+	    $Table = @{Name="Title";Expression={[string]$_.Title}},`
+		    @{Name="KB";Expression={[string]$_.KnowledgebaseArticles}},`
+		    @{Name="Classification";Expression={[string]$_.UpdateClassificationTitle}},`
+		    @{Name="Product";Expression={[string]$_.ProductTitles}},`
+		    @{Name="Family";Expression={[string]$_.ProductFamilyTitles}}
+	    # Display to Console
+            $Updates | Select $Table | sort Classification | ft Title,Classification,KB -AutoSize
+    }
+    Else { Write-Host -ForegroundColor DarkGreen "$working_noup" }
+
 
 # MS Office 64-Bit
-$Office64 = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match "Excel|Lync|Office|Outlook|Powerpoint|Visio|word" -and $_.Title -match "64-bit"}
-$Office64_count = $Office64.count
-    If ($Office64.count -lt 1)
-        {
-            $Office64_count = 0
-        }
-    If ($TrialRun -eq 0 -and $Office64.count -gt 0)
-        {
-            $Office64 | %{$_.Decline()}
-        }
 
-echo "$Office64_count $Office64_text"
-echo "$LanguagePack_titel"
+Write-Host -ForegroundColor Yellow "$Office64_titel"
+    $Updates = $null;    # Reset variable
+    $Updates = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match "Excel|Lync|Office|Outlook|Powerpoint|Visio|word" -and $_.Title -match "64-bit"}
+    If($Updates) {
+        Write-Host -ForegroundColor Green "$working_declining"
+	    $Updates | %{$_.Decline()}
+	    $Table = @{Name="Title";Expression={[string]$_.Title}},`
+		    @{Name="KB";Expression={[string]$_.KnowledgebaseArticles}},`
+		    @{Name="Classification";Expression={[string]$_.UpdateClassificationTitle}},`
+		    @{Name="Product";Expression={[string]$_.ProductTitles}},`
+		    @{Name="Family";Expression={[string]$_.ProductFamilyTitles}}
+	    # Display to Console
+            $Updates | Select $Table | sort Classification | ft Title,Classification,KB -AutoSize
+    }
+    Else { Write-Host -ForegroundColor DarkGreen "$working_noup" }
+
 
 # Language Pack
-$LanguagePack = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match "Language Interface Pack|LanguageInterfacePack|LanguageFeatureOnDemand|Sprachpaket f|Language Pack - Windows 10 -|LanguagePack - Windows 10 Insider Preview|Lan Pack (Language Features)"}
-$LanguagePack_counted = $LanguagePack.count
-    If ($LanguagePack.count -lt 1)
-        {
-            $LanguagePack_counted = 0
-        }
-    If ($TrialRun -eq 0 -and $LanguagePack.count -gt 0)
-        {
-            $LanguagePack  | %{$_.Decline()}
-        }
 
-echo "$LanguagePack_counted $LanguagePack_text"
-echo "$Cleaning_titel"
+Write-Host -ForegroundColor Yellow "$LanguagePack_titel"
+    $Updates = $null;    # Reset variable
+    $Updates = $WsusServerAdminProxy.GetUpdates() | ?{-not $_.IsDeclined -and $_.Title -match "Language Interface Pack|LanguageInterfacePack|LanguageFeatureOnDemand|Sprachpaket f|Language Pack - Windows 10 -|LanguagePack - Windows 10 Insider Preview|Lan Pack (Language Features)"}
+    If($Updates) {
+        Write-Host -ForegroundColor Green "$working_declining"
+	    $Updates | %{$_.Decline()}
+	    $Table = @{Name="Title";Expression={[string]$_.Title}},`
+		    @{Name="KB";Expression={[string]$_.KnowledgebaseArticles}},`
+		    @{Name="Classification";Expression={[string]$_.UpdateClassificationTitle}},`
+		    @{Name="Product";Expression={[string]$_.ProductTitles}},`
+		    @{Name="Family";Expression={[string]$_.ProductFamilyTitles}}
+	    # Display to Console
+            $Updates | Select $Table | sort Classification | ft Title,Classification,KB -AutoSize
+    }
+    Else { Write-Host -ForegroundColor DarkGreen "$working_noup" }
+
 
 Invoke-WsusServerCleanup -UpdateServer $WSUS -DeclineExpiredUpdates -DeclineSupersededUpdates -CleanupObsoleteUpdates -CleanupUnneededContentFiles -CompressUpdates
+
+
